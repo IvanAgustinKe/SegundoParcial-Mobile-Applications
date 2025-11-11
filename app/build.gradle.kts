@@ -64,4 +64,8 @@ dependencies {
     implementation(libs.ktor.client.cio)
     implementation(libs.ktor.client.serialization)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.datastore.preferences)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.material.icons.extended)
+
 }

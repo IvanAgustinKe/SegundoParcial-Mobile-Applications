@@ -15,7 +15,7 @@ import io.ktor.http.*
 
 class RepositorioApi : Repositorio {
 
-    private val apikey = "43add3e61ffb5e8c900e18a0c0dc546b"
+    private val apikey = "9a692ca1d082e061ef1c8cc0e0fe5fe2"
     private  val client = HttpClient(){
         install(ContentNegotiation){
             json(Json{
@@ -23,6 +23,7 @@ class RepositorioApi : Repositorio {
             })
         }
     }
+
 
     override suspend fun buscarCiudad(ciudad: String): List<Ciudad> {
         val respuesta = client.get("https://api.openweathermap.org/geo/1.0/direct"){
