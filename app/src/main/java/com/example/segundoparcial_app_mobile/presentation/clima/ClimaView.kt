@@ -23,11 +23,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
@@ -39,18 +40,30 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.BaselineShift
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.Alignment
+import com.example.segundoparcial_app_mobile.data.SettingsRepository
 
 
 @Composable
 fun ClimaView(
     estado: ClimaEstado,
+    loadIcon: suspend (String) -> ImageBitmap?,
     navController: NavController
 ) {
     val ctx = LocalContext.current
     val context = LocalContext.current
     val settings = remember { com.example.segundoparcial_app_mobile.data.SettingsRepository(context) }
     val units by settings.unitsFlow.collectAsState(initial = "metric")
-    val coroutineScope = rememberCoroutineScope()
     val unitLabel = if (units == "imperial") "°F" else "°C"
 
     when (estado) {
@@ -65,81 +78,160 @@ fun ClimaView(
             }
         }
         is ClimaEstado.Mostrar -> {
-            Column(modifier = Modifier.padding(16.dp)) {
-
-                Button(onClick = { navController.popBackStack() }) { Text("Volver") }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Button(onClick = { sharePronostico(ctx, estado) }) { Text("Compartir") }
+            Column(modifier = Modifier.padding(16.dp, 32.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(onClick = { navController.popBackStack() }) { Text("+") }
+                    Button(onClick = { sharePronostico(ctx, estado) }) { Text("Compartir") }
+                }
 
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    "Ciudad: ${estado.clima.name}",
+                    text = estado.clima.name,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 28.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth().padding(8.dp)
                 )
-                Text("Temperatura actual: ${estado.clima.main.temp} $unitLabel")
-                Text("Humedad: ${estado.clima.main.humidity}%")
-                Text("Estado: ${estado.clima.weather.firstOrNull()?.main ?: "N/A"}")
+
+                TemperatureView(estado, unitLabel, units, settings)
 
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = "Pronóstico:",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
+
+                ForecastView(estado, unitLabel, loadIcon)
+            }
+        }
+    }
+}
+
+@Composable
+fun TemperatureView(
+    estado: ClimaEstado.Mostrar,
+    unitLabel: String,
+    units: String,
+    settings: SettingsRepository
+) {
+    val coroutineScope = rememberCoroutineScope()
+    Text(
+        text = buildAnnotatedString {
+            append("${estado.clima.main.temp}")
+            withStyle(
+                style = SpanStyle(
+                    fontSize = 32.sp,
+                    baselineShift = BaselineShift.Superscript
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+            ) {
+                append(unitLabel)
+            }
+        },
+        fontWeight = FontWeight.Bold,
+        fontSize = 60.sp,
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth().padding(20.dp)
+    )
+    Text(
+        text = "${estado.clima.weather.firstOrNull()?.main ?: "N/A"} | HR ${estado.clima.main.humidity}%",
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center
+    )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(
-                        selected = units == "metric",
-                        onClick = { coroutineScope.launch { settings.saveUnits("metric") } },
-                        label = { Text("°C") }
-                    )
-                    FilterChip(
-                        selected = units == "imperial",
-                        onClick = { coroutineScope.launch { settings.saveUnits("imperial") } },
-                        label = { Text("°F") }
-                    )
-                }
+    Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(Modifier.height(12.dp))
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterChip(
+                selected = units == "metric",
+                onClick = { coroutineScope.launch { settings.saveUnits("metric") } },
+                label = { Text("°C") }
+            )
+            FilterChip(
+                selected = units == "imperial",
+                onClick = { coroutineScope.launch { settings.saveUnits("imperial") } },
+                label = { Text("°F") }
+            )
+        }
+    }
+}
 
-                ForecastSparkline(
-                    temps = estado.clima.forecast.list.map { it.main.temp }, // o .take(8)
-                    unitLabel = unitLabel
-                )
+@Composable
+fun ForecastView(
+    estado: ClimaEstado.Mostrar,
+    unitLabel: String,
+    loadIcon: suspend (String) -> ImageBitmap?,
+) {
+    Text(
+        text = "Pronóstico:",
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold
+    )
 
-                Spacer(Modifier.height(12.dp))
+    Spacer(Modifier.height(8.dp))
 
-                LazyRow(
-                    modifier = Modifier.padding(top = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(estado.clima.forecast.list) { forecastItem ->
-                        val clima = forecastItem.main
-                        val descripcion = forecastItem.weather.firstOrNull()
+    ForecastSparkline(
+        temps = estado.clima.forecast.list.map { it.main.temp }, // o .take(8)
+        unitLabel = unitLabel
+    )
 
-                        Card(
-                            modifier = Modifier
-                                .width(200.dp)
-                                .padding(horizontal = 4.dp),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text("Día: ${forecastItem.dt_txt}")
-                                Text("Temp: ${clima.temp} $unitLabel")
-                                Text("Min: ${clima.temp_min} $unitLabel")
-                                Text("Max: ${clima.temp_max} $unitLabel")
-                                Text("Estado: ${descripcion?.main ?: "N/A"}")
-                                Text("Icono: ${descripcion?.icon ?: "N/A"}")
-                            }
+    Spacer(Modifier.height(12.dp))
+
+    LazyRow(
+        modifier = Modifier.padding(top = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(estado.clima.forecast.list) { forecastItem ->
+            val clima = forecastItem.main
+            val descripcion = forecastItem.weather.firstOrNull()
+            val iconBitmap = remember { mutableStateOf<ImageBitmap?>(null) }
+
+            LaunchedEffect(descripcion?.icon) {
+                iconBitmap.value = descripcion?.icon?.let { loadIcon(it) }
+            }
+
+            Card(
+                modifier = Modifier
+                    .width(150.dp)
+                    .padding(horizontal = 4.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
+                if (iconBitmap.value != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        val partes = forecastItem.dt_txt.split(" ")
+                        val fechaCompleta = partes[0].split("-")
+                        val fecha = "${fechaCompleta[2]}/${fechaCompleta[1]}"
+                        val hora = partes[1].substring(0, 5)
+
+                        Text(
+                            fecha,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            hora,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        iconBitmap.value?.let { img ->
+                            Image(
+                                bitmap = img,
+                                contentDescription = null,
+                                modifier = Modifier.size(48.dp)
+                            )
                         }
+                        Text("${clima.temp_min.toInt()} $unitLabel / ${clima.temp_max.toInt()}$unitLabel")
+                        Text(descripcion?.main ?: "N/A")
                     }
                 }
             }

@@ -26,7 +26,7 @@ class SettingsRepository(private val context: Context) {
         val name = prefs[Keys.CITY_NAME] ?: return@map null
         val lat  = prefs[Keys.CITY_LAT] ?: return@map null
         val lon  = prefs[Keys.CITY_LON] ?: return@map null
-        Ciudad(name = name, lat = lat, lon = lon, country = "")
+        Ciudad(name = name, lat = lat, lon = lon, state = "", country = "")
     }
 
     /** Unidades preferidas */

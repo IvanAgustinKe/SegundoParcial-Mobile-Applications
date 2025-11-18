@@ -11,8 +11,8 @@ import androidx.navigation.NavController
 fun ClimaPage(
     navController: NavController,
     lat: Float,
-    lon: Float,
-    nombre: String
+    nombre: String,
+    lon: Float
 ) {
     val viewModel: ClimaViewModel = viewModel(
         factory = ClimaViewModelFactory(RepositorioApi())
@@ -23,5 +23,5 @@ fun ClimaPage(
         viewModel.cargarClima(lat, lon)
     }
 
-    ClimaView(estado = viewModel.estado, navController = navController)
+    ClimaView(estado = viewModel.estado, loadIcon = viewModel::cargarIcono, navController = navController)
 }

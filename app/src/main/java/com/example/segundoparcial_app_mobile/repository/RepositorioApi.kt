@@ -1,6 +1,8 @@
 package com.example.segundoparcial_app_mobile.repository
 
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import com.example.segundoparcial_app_mobile.repository.modelos.Ciudad
 import com.example.segundoparcial_app_mobile.repository.modelos.Clima
 import com.example.segundoparcial_app_mobile.repository.modelos.Forecast
@@ -10,7 +12,10 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.readBytes
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.*
+import java.net.URL
 
 
 class RepositorioApi : Repositorio {
@@ -71,6 +76,17 @@ class RepositorioApi : Repositorio {
             return respuesta.body<Forecast>()
         } else {
             throw Exception()
+        }
+    }
+
+    override suspend fun traerIcon(iconCode: String): Bitmap? {
+        return try {
+            val respuesta = client.get("http://openweathermap.org/img/wn/${iconCode}@2x.png")
+            val bytes = respuesta.readRawBytes()
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }
