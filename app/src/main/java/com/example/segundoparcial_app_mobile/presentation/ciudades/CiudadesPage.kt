@@ -29,11 +29,11 @@ fun CiudadesPage(
         )
     )
 
-    //  última ciudad guardada
+
     val ultimaCiudad by settings.selectedCity.collectAsState(initial = null)
 
     Column(Modifier.fillMaxSize()) {
-            // Vista actual
+
         CiudadesView(
             state = viewModel.uiState,
             onAction = { intencion -> viewModel.ejecutar(intencion) },

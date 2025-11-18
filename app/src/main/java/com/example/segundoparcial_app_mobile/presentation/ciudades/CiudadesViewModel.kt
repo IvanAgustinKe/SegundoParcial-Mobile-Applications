@@ -56,7 +56,7 @@ class CiudadesViewModel(
 
         router.navegar(Ruta.Clima(nombre = ciudad.name, lat = ciudad.lat, lon = ciudad.lon))
 
-        // limpia resultados para que al volver la lista esté vacía
+
         uiState = CiudadesEstado.Vacio
     }
 }

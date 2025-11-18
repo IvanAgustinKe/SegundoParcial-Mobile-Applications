@@ -18,7 +18,7 @@ fun ClimaPage(
         factory = ClimaViewModelFactory(RepositorioApi())
     )
 
-    // Al entrar a la pantalla, cargar el clima
+
     LaunchedEffect(Unit) {
         viewModel.cargarClima(lat, lon)
     }

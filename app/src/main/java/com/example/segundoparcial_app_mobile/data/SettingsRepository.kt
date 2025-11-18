@@ -21,7 +21,7 @@ class SettingsRepository(private val context: Context) {
         val UNITS     = stringPreferencesKey("units")
     }
 
-    /** Última ciudad seleccionada (o null si no hay) */
+
     val selectedCity: Flow<Ciudad?> = context.dataStore.data.map { prefs ->
         val name = prefs[Keys.CITY_NAME] ?: return@map null
         val lat  = prefs[Keys.CITY_LAT] ?: return@map null
@@ -29,12 +29,12 @@ class SettingsRepository(private val context: Context) {
         Ciudad(name = name, lat = lat, lon = lon, state = "", country = "")
     }
 
-    /** Unidades preferidas */
+
     val unitsFlow: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[Keys.UNITS] ?: "metric"
     }
 
-    /** Guardar ciudad seleccionada */
+
     suspend fun saveCity(ciudad: Ciudad) {
         context.dataStore.edit { prefs ->
             prefs[Keys.CITY_NAME] = ciudad.name
@@ -43,7 +43,7 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
-    /** Guardar unidades */
+
     suspend fun saveUnits(units: String) {
         context.dataStore.edit { it[Keys.UNITS] = units }
     }

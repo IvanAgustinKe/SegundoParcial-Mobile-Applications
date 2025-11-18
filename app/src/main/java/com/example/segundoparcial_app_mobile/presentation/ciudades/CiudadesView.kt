@@ -96,7 +96,7 @@ fun CiudadesView(
     }
 }
 
-/** SearchBar “Última búsqueda”. */
+
 @Composable
 private fun CitySearchBar(
     query: String,
