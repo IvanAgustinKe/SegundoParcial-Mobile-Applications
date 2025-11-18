@@ -7,5 +7,6 @@ data class Ciudad (
     val name: String,
     val lat: Float,
     val lon: Float,
+    val state: String,
     val country: String,
 )

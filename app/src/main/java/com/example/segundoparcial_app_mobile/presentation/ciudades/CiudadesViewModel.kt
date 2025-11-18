@@ -1,4 +1,5 @@
 package com.example.segundoparcial_app_mobile.presentation.ciudades
+import android.util.Log
 import com.example.segundoparcial_app_mobile.data.SettingsRepository
 
 
@@ -23,7 +24,6 @@ class CiudadesViewModel(
 ) : ViewModel() {
 
     var uiState by mutableStateOf<CiudadesEstado>(CiudadesEstado.Vacio)
-    private var ciudades: List<Ciudad> = emptyList()
 
     fun ejecutar(intencion: CiudadesIntencion) {
         when (intencion) {
@@ -44,7 +44,8 @@ class CiudadesViewModel(
                     uiState = CiudadesEstado.Resultado(resultado)
                 }
             } catch (e: Exception) {
-                print(e)
+                e.printStackTrace()
+                Log.e("CiudadesViewModel", "Error buscando ciudad: ${e.message}", e)
                 uiState = CiudadesEstado.Error()
             }
         }
@@ -63,7 +64,7 @@ class CiudadesViewModel(
     class CiudadesViewModelFactory(
         private val repositorio: RepositorioApi,
         private val router: Router,
-        private val settings: SettingsRepository   // 👈 nuevo
+        private val settings: SettingsRepository
     ) : ViewModelProvider.Factory {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             if (modelClass.isAssignableFrom(CiudadesViewModel::class.java)) {

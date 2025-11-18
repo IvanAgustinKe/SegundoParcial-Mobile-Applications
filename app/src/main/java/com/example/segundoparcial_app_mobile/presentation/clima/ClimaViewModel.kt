@@ -7,6 +7,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.segundoparcial_app_mobile.repository.Repositorio
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
 
 class ClimaViewModel(
     private val repositorio: Repositorio
@@ -27,6 +29,11 @@ class ClimaViewModel(
                 estado = ClimaEstado.Error
             }
         }
+    }
+
+    suspend fun cargarIcono(iconCode: String): ImageBitmap? {
+        val bmp = repositorio.traerIcon(iconCode)
+        return bmp?.asImageBitmap()
     }
 }
 
